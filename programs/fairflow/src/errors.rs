@@ -8,4 +8,6 @@ pub enum CompanyError {
     InvalidCompanyName,
     #[msg("Team name can only be between 1 and 10 characters")]
     InvalidTeamName,
+    #[msg("Maximum number of teams reached")]
+    MaxTeamsReached,
 }

@@ -42,11 +42,16 @@ impl<'info> CreateTeam<'info> {
             team_name.len() > 0 && team_name.len() <= 10,
             CompanyError::InvalidTeamName
         );
+        require!(
+            self.company_state.teams.len() < 5,
+            CompanyError::MaxTeamsReached
+        );
         self.team_state.set_inner(Team {
             team_name,
             employees: Vec::new(),
             bump: bumps.team_state,
         });
+        self.company_state.teams.push(self.team_state.key());
         Ok(())
     }
 }

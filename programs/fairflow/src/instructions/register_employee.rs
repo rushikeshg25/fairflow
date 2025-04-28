@@ -9,7 +9,7 @@ pub struct RegisterEmployee<'info> {
     pub employer: Signer<'info>,
     #[account(
         mut,
-        seeds= [b"team",team_name.as_bytes(),company_name.as_bytes(),employer.key().as_ref()],
+        seeds= [b"team",team_name.as_bytes(),company_name.as_bytes()],
         bump = team_state.bump,
     )]
     pub team_state: Account<'info, Team>,

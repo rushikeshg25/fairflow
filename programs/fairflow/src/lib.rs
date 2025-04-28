@@ -53,11 +53,25 @@ pub mod fairflow {
         )
     }
 
+    pub fn submit_feedback(
+        ctx: Context<SubmitFeedback>,
+        feedback_for: Pubkey,
+        feedback_rating: u8,
+        team_name: String,
+        company_name: String,
+    ) -> Result<()> {
+        Ok(())
+    }
+
     // pub fn process_payroll(ctx: Context<ProcessPayroll>) -> Result<()> {
     //     Ok(())
     // }
 
-    // pub fn submit_feedback(ctx: Context<SubmitFeedback>) -> Result<()> {
-    //     Ok(())
+    // pub fn remove_employee(
+    //     ctx: Context<RemoveEmployee>,
+    //     team_name: String,
+    //     company_name: String,
+    // ) -> Result<()> {
+    //     ctx.accounts.remove_employee(team_name, company_name, ctx.bumps)
     // }
 }

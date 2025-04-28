@@ -21,7 +21,7 @@ pub struct CreateTeam<'info> {
 
     #[account(
         init,
-        seeds= [b"team",team_name.as_bytes(),company_name.as_bytes(),employer.key().as_ref()],
+        seeds= [b"team",team_name.as_bytes(),company_name.as_bytes()],
         bump,
         payer = employer,
         space = 8 + Team::INIT_SPACE,

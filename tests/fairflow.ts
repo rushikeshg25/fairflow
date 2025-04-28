@@ -50,12 +50,7 @@ describe('fairflow', () => {
       );
 
       const [teamPDA] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-          Buffer.from('team'),
-          Buffer.from(teamName),
-          Buffer.from(companyName),
-          employer.publicKey.toBuffer(),
-        ],
+        [Buffer.from('team'), Buffer.from(teamName), Buffer.from(companyName)],
         program.programId
       );
 
@@ -100,12 +95,7 @@ describe('fairflow', () => {
       );
 
       const [teamPDA] = anchor.web3.PublicKey.findProgramAddressSync(
-        [
-          Buffer.from('team'),
-          Buffer.from(teamName),
-          Buffer.from(companyName),
-          employer.publicKey.toBuffer(),
-        ],
+        [Buffer.from('team'), Buffer.from(teamName), Buffer.from(companyName)],
         program.programId
       );
 

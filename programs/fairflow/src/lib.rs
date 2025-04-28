@@ -37,11 +37,23 @@ pub mod fairflow {
             .create_team_state(team_name, company_name, ctx.bumps)
     }
 
-    // pub fn process_payroll(ctx: Context<ProcessPayroll>) -> Result<()> {
-    //     Ok(())
-    // }
+    pub fn register_employee(
+        ctx: Context<RegisterEmployee>,
+        team_name: String,
+        company_name: String,
+        salary_account: Pubkey,
+        employee_name: String,
+    ) -> Result<()> {
+        ctx.accounts.register_employee(
+            team_name,
+            company_name,
+            salary_account,
+            employee_name,
+            ctx.bumps,
+        )
+    }
 
-    // pub fn register_employee(ctx: Context<RegisterEmployee>) -> Result<()> {
+    // pub fn process_payroll(ctx: Context<ProcessPayroll>) -> Result<()> {
     //     Ok(())
     // }
 

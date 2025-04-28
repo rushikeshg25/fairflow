@@ -31,7 +31,7 @@ impl<'info> Initialize<'info> {
         bumps: &InitializeBumps,
     ) -> Result<()> {
         require!(
-            company_name.len() == 0 || company_name.len() > 10,
+            company_name.len() > 0 && company_name.len() <= 10,
             CompanyError::InvalidCompanyName
         );
         self.company_state.set_inner(Company {

@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Accounts)]
-#[instruction(company_name: String,team_name: String)]
+#[instruction(team_name: String, company_name: String)]
 pub struct CreateTeam<'info> {
     #[account(mut)]
     pub employer: Signer<'info>,
@@ -39,7 +39,7 @@ impl<'info> CreateTeam<'info> {
         bumps: CreateTeamBumps,
     ) -> Result<()> {
         require!(
-            team_name.len() == 0 || team_name.len() > 10,
+            team_name.len() > 0 && team_name.len() <= 10,
             CompanyError::InvalidTeamName
         );
         self.team_state.set_inner(Team {

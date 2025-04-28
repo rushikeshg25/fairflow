@@ -56,11 +56,13 @@ pub mod fairflow {
     pub fn submit_feedback(
         ctx: Context<SubmitFeedback>,
         feedback_for: Pubkey,
-        feedback_rating: u8,
         team_name: String,
         company_name: String,
+        feedback_rating: u8,
     ) -> Result<()> {
-        Ok(())
+        ctx.accounts
+            .submit_feedback(feedback_for, team_name, company_name, feedback_rating)
+        //Prob might need bumps here
     }
 
     // pub fn process_payroll(ctx: Context<ProcessPayroll>) -> Result<()> {

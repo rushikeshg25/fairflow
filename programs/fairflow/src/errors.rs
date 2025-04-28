@@ -12,10 +12,12 @@ pub enum CompanyError {
     MaxTeamsReached,
     #[msg("Employee name can only be between 1 and 10 characters")]
     InvalidEmployeeName,
-    #[msg("Cannot vote for Employee outside of the team")]
+    #[msg("Cannot submit feedback score for Employee outside of the team")]
     EmployeeNotInTeam,
-    #[msg("Cannot vote for yourself")]
+    #[msg("Cannot submit feedback score for yourself")]
     CannotVoteForSelf,
-    #[msg("Already voted for this Employee")]
-    AlreadyVoted,
+    #[msg("Unauthorized to provide feedback")]
+    Unauthorized,
+    #[msg("Feeback rating must be between 1 and 5")]
+    InvalidFeedbackRating,
 }

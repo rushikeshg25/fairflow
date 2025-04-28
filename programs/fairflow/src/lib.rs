@@ -14,12 +14,38 @@ pub mod fairflow {
 
     pub fn initialize_company_state(
         ctx: Context<Initialize>,
-        name: String,
+        company_name: String,
         inc_percent: u8,
         dec_percent: u8,
         treasury: Pubkey,
     ) -> Result<()> {
-        ctx.accounts
-            .init_company_state(name, inc_percent, dec_percent, treasury, &ctx.bumps)
+        ctx.accounts.init_company_state(
+            company_name,
+            inc_percent,
+            dec_percent,
+            treasury,
+            &ctx.bumps,
+        )
     }
+
+    pub fn create_team_state(
+        ctx: Context<CreateTeam>,
+        team_name: String,
+        company_name: String,
+    ) -> Result<()> {
+        ctx.accounts
+            .create_team_state(team_name, company_name, ctx.bumps)
+    }
+
+    // pub fn process_payroll(ctx: Context<ProcessPayroll>) -> Result<()> {
+    //     Ok(())
+    // }
+
+    // pub fn register_employee(ctx: Context<RegisterEmployee>) -> Result<()> {
+    //     Ok(())
+    // }
+
+    // pub fn submit_feedback(ctx: Context<SubmitFeedback>) -> Result<()> {
+    //     Ok(())
+    // }
 }

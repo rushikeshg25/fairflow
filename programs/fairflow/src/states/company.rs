@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct Company {
     #[max_len(10)]
-    pub name: String,
+    pub company_name: String,
     pub treasury: Pubkey,
     #[max_len(5)]
     pub teams: Vec<Pubkey>,

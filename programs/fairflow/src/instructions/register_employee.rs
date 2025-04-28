@@ -23,8 +23,6 @@ pub struct RegisterEmployee<'info> {
     )]
     pub employee_state: Account<'info, Employee>,
 
-    pub salary_wallet: SystemAccount<'info>,
-
     pub system_program: Program<'info, System>,
 }
 

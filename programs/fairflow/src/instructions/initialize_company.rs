@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{errors::CompanyError, states::Company};
+use crate::{constants::ANCHOR_DISCRIMINATOR, errors::CompanyError, states::Company};
 
 #[derive(Accounts)]
 #[instruction(company_name: String)]
@@ -10,13 +10,11 @@ pub struct Initialize<'info> {
     #[account(
         init,
         payer = employer,
-        space = 8 + Company::INIT_SPACE,
+        space = ANCHOR_DISCRIMINATOR + Company::INIT_SPACE,
         seeds= [b"company",company_name.as_bytes(),employer.key().as_ref()],
         bump,
     )]
     pub company_state: Account<'info, Company>,
-
-    pub treasury: SystemAccount<'info>,
 
     pub system_program: Program<'info, System>,
 }

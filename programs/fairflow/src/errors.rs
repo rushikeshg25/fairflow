@@ -20,4 +20,12 @@ pub enum CompanyError {
     Unauthorized,
     #[msg("Feeback rating must be between 1 and 5")]
     InvalidFeedbackRating,
+    #[msg("No feedbacks received for this payroll period")]
+    NoFeedbacksReceived,
+    #[msg("The treasury has insufficient funds to process this payment")]
+    InsufficientFunds,
+    #[msg("Salary payment transfer failed")]
+    PaymentTransferFailed,
+    #[msg("Invalid treasury provided")]
+    InvalidTreasury,
 }

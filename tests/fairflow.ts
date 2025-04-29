@@ -196,3 +196,11 @@ describe('fairflow', () => {
     }
   });
 });
+
+it('Processes Payroll', async () => {});
+
+function EncryptDecrypt(number, key) {
+  return number ^ key;
+}
+
+const ENCRYPTION_KEY = 0xabcd;

@@ -1,5 +1,6 @@
 #![allow(unexpected_cfgs)]
 use anchor_lang::prelude::*;
+pub mod constants;
 pub mod errors;
 pub mod instructions;
 pub mod states;
@@ -65,15 +66,20 @@ pub mod fairflow {
         //Prob might need bumps here
     }
 
-    // pub fn process_payroll(ctx: Context<ProcessPayroll>) -> Result<()> {
-    //     Ok(())
-    // }
-
-    // pub fn remove_employee(
-    //     ctx: Context<RemoveEmployee>,
-    //     team_name: String,
-    //     company_name: String,
-    // ) -> Result<()> {
-    //     ctx.accounts.remove_employee(team_name, company_name, ctx.bumps)
-    // }
+    pub fn process_payroll(
+        ctx: Context<ProcessPayroll>,
+        team_name: String,
+        company_name: String,
+        salary_account: Pubkey,
+        salary: u16,
+        encrypted_salary: u16,
+    ) -> Result<()> {
+        ctx.accounts.process_payroll(
+            team_name,
+            company_name,
+            salary_account,
+            salary,
+            encrypted_salary,
+        )
+    }
 }

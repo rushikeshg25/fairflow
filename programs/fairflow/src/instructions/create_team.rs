@@ -1,6 +1,7 @@
 use anchor_lang::prelude::*;
 
 use crate::{
+    constants::ANCHOR_DISCRIMINATOR,
     errors::CompanyError,
     states::{Company, Team},
 };
@@ -24,7 +25,7 @@ pub struct CreateTeam<'info> {
         seeds= [b"team",team_name.as_bytes(),company_name.as_bytes()],
         bump,
         payer = employer,
-        space = 8 + Team::INIT_SPACE,
+        space = ANCHOR_DISCRIMINATOR + Team::INIT_SPACE,
     )]
     pub team_state: Account<'info, Team>,
 

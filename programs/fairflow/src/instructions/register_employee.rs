@@ -1,6 +1,6 @@
 use anchor_lang::prelude::*;
 
-use crate::{errors::CompanyError, Employee, Team};
+use crate::{constants::ANCHOR_DISCRIMINATOR, errors::CompanyError, Employee, Team};
 
 #[derive(Accounts)]
 #[instruction(team_name: String, company_name: String,salary_account: Pubkey)]
@@ -19,7 +19,7 @@ pub struct RegisterEmployee<'info> {
         seeds= [b"employee",company_name.as_bytes(),salary_account.as_ref()],
         bump,
         payer = employer,
-        space = 8 + Employee::INIT_SPACE,
+        space = ANCHOR_DISCRIMINATOR + Employee::INIT_SPACE,
     )]
     pub employee_state: Account<'info, Employee>,
 
@@ -46,7 +46,7 @@ impl<'info> RegisterEmployee<'info> {
             last_payroll_feedback: 0,
             current_total_feedback_score: 0,
             current_total_feedbacks: 0,
-            current_salary: 0,
+            encrypted_current_salary: 0,
             bump: bumps.employee_state,
         });
 

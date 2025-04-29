@@ -11,8 +11,14 @@ describe('fairflow', () => {
   const employer = anchor.web3.Keypair.generate();
   const companyName = 'companyt';
   const teamName = 'teamt';
-  const salaryAccount = anchor.web3.Keypair.generate();
-  const employeeName = 'employee';
+
+  //feedback for/to
+  const salaryAccount1 = anchor.web3.Keypair.generate();
+  const employeeName1 = 'employee1';
+
+  //feedback from
+  const salaryAccount2 = anchor.web3.Keypair.generate();
+  const employeeName2 = 'employee2';
 
   it('Company State initialized', async () => {
     try {
@@ -89,7 +95,7 @@ describe('fairflow', () => {
         [
           Buffer.from('employee'),
           Buffer.from(companyName),
-          salaryAccount.publicKey.toBuffer(),
+          salaryAccount1.publicKey.toBuffer(),
         ],
         program.programId
       );
@@ -103,8 +109,8 @@ describe('fairflow', () => {
         .registerEmployee(
           teamName,
           companyName,
-          salaryAccount.publicKey,
-          employeeName
+          salaryAccount1.publicKey,
+          employeeName1
         )
         .signers([employer])
         .accounts({
@@ -117,10 +123,76 @@ describe('fairflow', () => {
       // console.log('Team Account:', teamAccount);
       // console.log('Employee Account:', employeeAccount);
       // console.log('Employee PDA:', employeePDA.toString());
-      assert.equal(employeeAccount.employeeName, employeeName);
+      assert.equal(employeeAccount.employeeName, employeeName1);
       assert.equal(teamAccount.employees.length, 1);
     } catch (error) {
       console.log('An error occurred:', error);
+    }
+  });
+
+  it('Submits Feedback', async () => {
+    try {
+      //registering employee2
+      const tx = await program.methods
+        .registerEmployee(
+          teamName,
+          companyName,
+          salaryAccount2.publicKey,
+          employeeName2
+        )
+        .signers([employer])
+        .accounts({
+          employer: employer.publicKey,
+        })
+        .rpc();
+
+      //Feedback for/to
+      const [employeePDA1] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('employee'),
+          Buffer.from(companyName),
+          salaryAccount1.publicKey.toBuffer(),
+        ],
+        program.programId
+      );
+
+      //Feedback from
+      const [employeePDA2] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('employee'),
+          Buffer.from(companyName),
+          salaryAccount2.publicKey.toBuffer(),
+        ],
+        program.programId
+      );
+
+      const [teamPDA] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('team'), Buffer.from(teamName), Buffer.from(companyName)],
+        program.programId
+      );
+      // console.log(employer.publicKey.toString());
+      // console.log(employeePDA2.toString());
+      // console.log(salaryAccount2.publicKey.toString());
+      const tx1 = await program.methods
+        .submitFeedback(salaryAccount1.publicKey, teamName, companyName, 2)
+        .accounts({
+          employeeProvidingFeedback: salaryAccount2.publicKey,
+        })
+        .signers([salaryAccount2])
+        .rpc();
+
+      const employeeAccount1 = await program.account.employee.fetch(
+        employeePDA1
+      );
+      const employeeAccount2 = await program.account.employee.fetch(
+        employeePDA2
+      );
+      const teamAccount = await program.account.team.fetch(teamPDA);
+
+      assert.equal(employeeAccount1.currentTotalFeedbacks, 1);
+      assert.equal(employeeAccount1.currentTotalFeedbackScore, 2);
+    } catch (error) {
+      console.log(error);
     }
   });
 });

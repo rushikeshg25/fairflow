@@ -47,7 +47,7 @@ impl<'info> ProcessPayroll<'info> {
         _salary_account: Pubkey,
         encryption_key: u16,
     ) -> Result<()> {
-        let mut current_rounded_feedback: u8 = 0;
+        let current_rounded_feedback: u8 = 0;
         if self.employee_state.current_total_feedbacks == 0 {
         } else {
             //Calculate feedback score from 1-5

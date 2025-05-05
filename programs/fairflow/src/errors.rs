@@ -28,4 +28,12 @@ pub enum CompanyError {
     PaymentTransferFailed,
     #[msg("Invalid treasury provided")]
     InvalidTreasury,
+    #[msg("Invalid salary account provided")]
+    InvalidSalaryAccount,
+    #[msg("Funding treasury failed")]
+    FundingTreasuryFailed,
+    #[msg("Transaction failed")]
+    TransactionFailed,
+    #[msg("Arithmetic overflow")]
+    ArithmeticOverflow,
 }

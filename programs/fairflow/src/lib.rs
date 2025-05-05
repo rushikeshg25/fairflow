@@ -19,15 +19,17 @@ pub mod fairflow {
         company_name: String,
         inc_percent: u8,
         dec_percent: u8,
-        treasury: Pubkey,
     ) -> Result<()> {
-        ctx.accounts.init_company_state(
-            company_name,
-            inc_percent,
-            dec_percent,
-            treasury,
-            &ctx.bumps,
-        )
+        ctx.accounts
+            .init_company_state(company_name, inc_percent, dec_percent, &ctx.bumps)
+    }
+
+    pub fn fund_treasury(
+        ctx: Context<FundTreasury>,
+        company_name: String,
+        amount: u64,
+    ) -> Result<()> {
+        ctx.accounts.fund_treasury(company_name, amount)
     }
 
     pub fn create_team_state(
@@ -43,16 +45,16 @@ pub mod fairflow {
         ctx: Context<RegisterEmployee>,
         team_name: String,
         company_name: String,
-        salary_account: Pubkey,
         employee_name: String,
+        employee_owned_salary_wallet: Pubkey,
         current_salary: u16,
         key: u16,
     ) -> Result<()> {
         ctx.accounts.register_employee(
             team_name,
             company_name,
-            salary_account,
             employee_name,
+            employee_owned_salary_wallet,
             current_salary,
             key,
             ctx.bumps,
@@ -68,17 +70,20 @@ pub mod fairflow {
     ) -> Result<()> {
         ctx.accounts
             .submit_feedback(feedback_for, team_name, company_name, feedback_rating)
-        //Prob might need bumps here
     }
 
     pub fn process_payroll(
         ctx: Context<ProcessPayroll>,
         team_name: String,
         company_name: String,
-        salary_account: Pubkey,
+        employee_owned_salary_wallet: Pubkey,
         encryption_key: u16,
     ) -> Result<()> {
-        ctx.accounts
-            .process_payroll(team_name, company_name, salary_account, encryption_key)
+        ctx.accounts.process_payroll(
+            team_name,
+            company_name,
+            employee_owned_salary_wallet,
+            encryption_key,
+        )
     }
 }

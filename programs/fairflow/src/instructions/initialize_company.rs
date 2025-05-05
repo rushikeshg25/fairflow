@@ -16,6 +16,12 @@ pub struct Initialize<'info> {
     )]
     pub company_state: Account<'info, Company>,
 
+    #[account(
+        seeds = [b"treasury", company_state.key().as_ref()],
+        bump,
+    )]
+    pub treasury: SystemAccount<'info>,
+
     pub system_program: Program<'info, System>,
 }
 
@@ -25,7 +31,6 @@ impl<'info> Initialize<'info> {
         company_name: String,
         inc_percent: u8,
         dec_percent: u8,
-        treasury: Pubkey,
         bumps: &InitializeBumps,
     ) -> Result<()> {
         require!(
@@ -34,7 +39,7 @@ impl<'info> Initialize<'info> {
         );
         self.company_state.set_inner(Company {
             company_name,
-            treasury,
+            treasury: self.treasury.key(),
             teams: Vec::new(),
             inc_percent,
             dec_percent,

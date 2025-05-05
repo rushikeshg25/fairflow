@@ -16,7 +16,7 @@ pub struct SubmitFeedback<'info> {
 
     #[account(
         mut,
-        seeds= [b"employee",company_name.as_bytes(),feedback_for.as_ref()],
+        seeds= [b"employee",company_name.as_bytes(),feedback_for.key().as_ref()],
         bump = employee_to_feedback_state.bump,
     )]
     pub employee_to_feedback_state: Account<'info, Employee>,

@@ -6,7 +6,7 @@ use crate::{
 };
 
 #[derive(Accounts)]
-#[instruction(team_name: String, company_name: String,salary_account: Pubkey)]
+#[instruction(team_name: String, company_name: String,employee_name: String,employee_owned_salary_wallet:Pubkey)]
 pub struct RegisterEmployee<'info> {
     #[account(mut)]
     pub employer: Signer<'info>,
@@ -19,12 +19,18 @@ pub struct RegisterEmployee<'info> {
 
     #[account(
         init,
-        seeds= [b"employee",company_name.as_bytes(),salary_account.as_ref()],
+        seeds= [b"employee",company_name.as_bytes(),employee_owned_salary_wallet.key().as_ref()],
         bump,
         payer = employer,
         space = ANCHOR_DISCRIMINATOR + Employee::INIT_SPACE,
     )]
     pub employee_state: Account<'info, Employee>,
+
+    #[account(
+        seeds = [b"salary", company_name.as_bytes(), employee_state.key().as_ref()],
+        bump,
+    )]
+    pub salary_account: SystemAccount<'info>,
 
     pub system_program: Program<'info, System>,
 }
@@ -34,8 +40,8 @@ impl<'info> RegisterEmployee<'info> {
         &mut self,
         _team_name: String,
         _company_name: String,
-        salary_account: Pubkey,
         employee_name: String,
+        employee_owned_salary_wallet: Pubkey,
         current_salary: u16,
         key: u16,
         bumps: RegisterEmployeeBumps,
@@ -46,16 +52,18 @@ impl<'info> RegisterEmployee<'info> {
         );
         self.employee_state.set_inner(Employee {
             employee_name: employee_name,
+            employee_owned_salary_wallet,
             team: self.team_state.key(),
-            salary_account,
+            salary_account: self.salary_account.key(),
             last_payroll_feedback: 0,
             current_total_feedback_score: 0,
             current_total_feedbacks: 0,
             encrypted_current_salary: encrypt_decrypt_salary(key, current_salary),
+            salary_account_bump: bumps.salary_account,
             bump: bumps.employee_state,
         });
 
-        self.team_state.employees.push(self.employee_state.key());
+        self.team_state.employees.push(employee_owned_salary_wallet);
 
         Ok(())
     }

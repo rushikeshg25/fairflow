@@ -12,3 +12,6 @@ pub use register_employee::*;
 
 pub mod submit_feedback;
 pub use submit_feedback::*;
+
+pub mod fund_treasury;
+pub use fund_treasury::*;

@@ -7,19 +7,17 @@ describe('fairflow', () => {
   const ENCRYPTION_KEY = 0xabcd;
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.fairflow as Program<Fairflow>;
-  const treasuryWallet = anchor.web3.Keypair.generate();
-  const treasury = treasuryWallet.publicKey;
   const employer = anchor.web3.Keypair.generate();
   const companyName = 'companyt';
   const teamName = 'teamt';
 
   //feedback for/to
-  const salaryAccount1 = anchor.web3.Keypair.generate();
   const employeeName1 = 'employee1';
+  const employee1_owned_salary_wallet = anchor.web3.Keypair.generate();
 
   //feedback from
-  const salaryAccount2 = anchor.web3.Keypair.generate();
   const employeeName2 = 'employee2';
+  const employee2_owned_salary_wallet = anchor.web3.Keypair.generate();
 
   it('Company State initialized', async () => {
     try {
@@ -27,12 +25,12 @@ describe('fairflow', () => {
         .getProvider()
         .connection.requestAirdrop(
           employer.publicKey,
-          anchor.web3.LAMPORTS_PER_SOL
+          anchor.web3.LAMPORTS_PER_SOL * 30
         );
       await anchor.getProvider().connection.confirmTransaction(signature);
 
       const tx = await program.methods
-        .initializeCompanyState(companyName, 10, 5, treasury)
+        .initializeCompanyState(companyName, 10, 5)
         .signers([employer])
         .accounts({
           employer: employer.publicKey,
@@ -41,6 +39,50 @@ describe('fairflow', () => {
       // console.log('Your transaction signature', tx);
     } catch (error) {
       console.log('An error occurred:', error);
+    }
+  });
+
+  it('Funds Treasury', async () => {
+    try {
+      const companyPDA = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('company'),
+          Buffer.from(companyName),
+          employer.publicKey.toBuffer(),
+        ],
+        program.programId
+      )[0];
+
+      const companyAccount = await program.account.company.fetch(companyPDA);
+
+      const treasuryPDA = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('treasury'), companyPDA.toBuffer()],
+        program.programId
+      )[0];
+
+      const treasuryInitialBalance =
+        await program.provider.connection.getBalance(treasuryPDA);
+
+      const tx = await program.methods
+        .fundTreasury(companyName, new anchor.BN(20))
+        .accounts({
+          employer: employer.publicKey,
+        })
+        .signers([employer])
+        .rpc();
+
+      // Check the new balance of the treasury
+      const treasuryNewBalance = await program.provider.connection.getBalance(
+        treasuryPDA
+      );
+
+      assert.equal(
+        treasuryNewBalance - treasuryInitialBalance,
+        20 * anchor.web3.LAMPORTS_PER_SOL
+      );
+    } catch (error) {
+      console.log('An error occurred:', error);
+      assert.fail(error.toString());
     }
   });
 
@@ -72,14 +114,6 @@ describe('fairflow', () => {
       const isTeamInCompany = companyAccount.teams.some((pubkey) =>
         pubkey.equals(teamPDA)
       );
-
-      // console.log('Is team in company:', isTeamInCompany);
-      // console.log(
-      //   'Company teams:',
-      //   companyAccount.teams.map((pk) => pk.toString())
-      // );
-      // console.log('Team PDA:', teamPDA.toString());
-
       assert.isTrue(
         isTeamInCompany,
         "Team should be added to company's teams array"
@@ -95,7 +129,7 @@ describe('fairflow', () => {
         [
           Buffer.from('employee'),
           Buffer.from(companyName),
-          salaryAccount1.publicKey.toBuffer(),
+          employee1_owned_salary_wallet.publicKey.toBuffer(),
         ],
         program.programId
       );
@@ -109,8 +143,8 @@ describe('fairflow', () => {
         .registerEmployee(
           teamName,
           companyName,
-          salaryAccount1.publicKey,
           employeeName1,
+          employee1_owned_salary_wallet.publicKey,
           2,
           ENCRYPTION_KEY
         )
@@ -122,9 +156,6 @@ describe('fairflow', () => {
 
       const employeeAccount = await program.account.employee.fetch(employeePDA);
       const teamAccount = await program.account.team.fetch(teamPDA);
-      // console.log('Team Account:', teamAccount);
-      // console.log('Employee Account:', employeeAccount);
-      // console.log('Employee PDA:', employeePDA.toString());
       assert.equal(employeeAccount.employeeName, employeeName1);
       assert.equal(teamAccount.employees.length, 1);
       assert.equal(
@@ -143,8 +174,8 @@ describe('fairflow', () => {
         .registerEmployee(
           teamName,
           companyName,
-          salaryAccount2.publicKey,
           employeeName2,
+          employee2_owned_salary_wallet.publicKey,
           3,
           ENCRYPTION_KEY
         )
@@ -159,7 +190,7 @@ describe('fairflow', () => {
         [
           Buffer.from('employee'),
           Buffer.from(companyName),
-          salaryAccount1.publicKey.toBuffer(),
+          employee1_owned_salary_wallet.publicKey.toBuffer(),
         ],
         program.programId
       );
@@ -169,7 +200,7 @@ describe('fairflow', () => {
         [
           Buffer.from('employee'),
           Buffer.from(companyName),
-          salaryAccount2.publicKey.toBuffer(),
+          employee2_owned_salary_wallet.publicKey.toBuffer(),
         ],
         program.programId
       );
@@ -178,56 +209,117 @@ describe('fairflow', () => {
         [Buffer.from('team'), Buffer.from(teamName), Buffer.from(companyName)],
         program.programId
       );
-      // console.log(employer.publicKey.toString());
-      // console.log(employeePDA2.toString());
-      // console.log(salaryAccount2.publicKey.toString());
+
       const tx1 = await program.methods
-        .submitFeedback(salaryAccount1.publicKey, teamName, companyName, 2)
+        .submitFeedback(
+          employee1_owned_salary_wallet.publicKey,
+          teamName,
+          companyName,
+          5
+        )
         .accounts({
-          employeeProvidingFeedback: salaryAccount2.publicKey,
+          employeeProvidingFeedback: employee2_owned_salary_wallet.publicKey,
         })
-        .signers([salaryAccount2])
+        .signers([employee2_owned_salary_wallet])
         .rpc();
 
       const employeeAccount1 = await program.account.employee.fetch(
         employeePDA1
       );
-      const employeeAccount2 = await program.account.employee.fetch(
-        employeePDA2
-      );
-      const teamAccount = await program.account.team.fetch(teamPDA);
 
       assert.equal(employeeAccount1.currentTotalFeedbacks, 1);
-      assert.equal(employeeAccount1.currentTotalFeedbackScore, 2);
+      assert.equal(employeeAccount1.currentTotalFeedbackScore, 5);
     } catch (error) {
       console.log(error);
     }
   });
+
   it('Processes Payroll', async () => {
     try {
-      //Airdropping 10 SOL to the treasury wallet
-      const signature = await anchor
-        .getProvider()
-        .connection.requestAirdrop(treasury, 10 * anchor.web3.LAMPORTS_PER_SOL);
-      await anchor.getProvider().connection.confirmTransaction(signature);
+      const employerBalance = await program.provider.connection.getBalance(
+        employer.publicKey
+      );
+      const requiredAmount = 10 * anchor.web3.LAMPORTS_PER_SOL;
 
+      if (employerBalance < requiredAmount) {
+        const additionalAmount =
+          Math.ceil(
+            (requiredAmount - employerBalance) / anchor.web3.LAMPORTS_PER_SOL
+          ) + 1;
+        const signature = await anchor
+          .getProvider()
+          .connection.requestAirdrop(
+            employer.publicKey,
+            additionalAmount * anchor.web3.LAMPORTS_PER_SOL
+          );
+        await anchor.getProvider().connection.confirmTransaction(signature);
+      }
+
+      const tx1 = await program.methods
+        .fundTreasury(companyName, new anchor.BN(10))
+        .accounts({
+          employer: employer.publicKey,
+        })
+        .signers([employer])
+        .rpc();
+
+      const companyPDA = await anchor.web3.PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('company'),
+          Buffer.from(companyName),
+          employer.publicKey.toBuffer(),
+        ],
+        program.programId
+      )[0];
+
+      const treasuryPDA = await anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from('treasury'), companyPDA.toBuffer()],
+        program.programId
+      )[0];
+
+      const treasuryInitialBalance =
+        await program.provider.connection.getBalance(treasuryPDA);
       //Finding Employee PDA
-      const [employeePDA] = anchor.web3.PublicKey.findProgramAddressSync(
+      const [employeePDA] = await anchor.web3.PublicKey.findProgramAddressSync(
         [
           Buffer.from('employee'),
           Buffer.from(companyName),
-          salaryAccount1.publicKey.toBuffer(),
+          employee1_owned_salary_wallet.publicKey.toBuffer(),
         ],
         program.programId
       );
 
-      const employeeAccount = await program.account.employee.fetch(employeePDA);
+      // Process payroll
+      const tx = await program.methods
+        .processPayroll(
+          teamName,
+          companyName,
+          employee1_owned_salary_wallet.publicKey,
+          ENCRYPTION_KEY
+        )
+        .accounts({
+          employer: employer.publicKey,
+        })
+        .signers([employer])
+        .rpc();
+
+      // Verify results
+      const updatedEmployeeAccount = await program.account.employee.fetch(
+        employeePDA
+      );
+      const finalTreasuryBalance = await program.provider.connection.getBalance(
+        treasuryPDA
+      );
+
+      assert.equal(updatedEmployeeAccount.lastPayrollFeedback, 5);
+      assert.equal(updatedEmployeeAccount.currentTotalFeedbackScore, 0);
+      assert.equal(updatedEmployeeAccount.currentTotalFeedbacks, 0);
+      assert.isBelow(finalTreasuryBalance, treasuryInitialBalance);
     } catch (error) {
       console.log('An error occurred:', error);
     }
   });
 });
-
 function encryptDecrypt(number, key) {
   return number ^ key;
 }

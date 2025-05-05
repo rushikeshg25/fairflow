@@ -1,6 +1,9 @@
 use anchor_lang::prelude::*;
 
-use crate::{constants::ANCHOR_DISCRIMINATOR, errors::CompanyError, Employee, Team};
+use crate::{
+    constants::ANCHOR_DISCRIMINATOR, errors::CompanyError, utils::encrypt_decrypt_salary, Employee,
+    Team,
+};
 
 #[derive(Accounts)]
 #[instruction(team_name: String, company_name: String,salary_account: Pubkey)]
@@ -33,7 +36,8 @@ impl<'info> RegisterEmployee<'info> {
         _company_name: String,
         salary_account: Pubkey,
         employee_name: String,
-        encrypted_current_salary: u16,
+        current_salary: u16,
+        key: u16,
         bumps: RegisterEmployeeBumps,
     ) -> Result<()> {
         require!(
@@ -47,7 +51,7 @@ impl<'info> RegisterEmployee<'info> {
             last_payroll_feedback: 0,
             current_total_feedback_score: 0,
             current_total_feedbacks: 0,
-            encrypted_current_salary,
+            encrypted_current_salary: encrypt_decrypt_salary(key, current_salary),
             bump: bumps.employee_state,
         });
 

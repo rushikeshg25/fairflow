@@ -9,7 +9,6 @@ describe('fairflow', () => {
   const program = anchor.workspace.fairflow as Program<Fairflow>;
   const treasuryWallet = anchor.web3.Keypair.generate();
   const treasury = treasuryWallet.publicKey;
-
   const employer = anchor.web3.Keypair.generate();
   const companyName = 'companyt';
   const teamName = 'teamt';
@@ -112,7 +111,8 @@ describe('fairflow', () => {
           companyName,
           salaryAccount1.publicKey,
           employeeName1,
-          EncryptDecrypt(10, ENCRYPTION_KEY)
+          2,
+          ENCRYPTION_KEY
         )
         .signers([employer])
         .accounts({
@@ -127,6 +127,10 @@ describe('fairflow', () => {
       // console.log('Employee PDA:', employeePDA.toString());
       assert.equal(employeeAccount.employeeName, employeeName1);
       assert.equal(teamAccount.employees.length, 1);
+      assert.equal(
+        employeeAccount.encryptedCurrentSalary,
+        encryptDecrypt(2, ENCRYPTION_KEY)
+      );
     } catch (error) {
       console.log('An error occurred:', error);
     }
@@ -141,7 +145,8 @@ describe('fairflow', () => {
           companyName,
           salaryAccount2.publicKey,
           employeeName2,
-          EncryptDecrypt(11, ENCRYPTION_KEY)
+          3,
+          ENCRYPTION_KEY
         )
         .signers([employer])
         .accounts({
@@ -198,11 +203,32 @@ describe('fairflow', () => {
       console.log(error);
     }
   });
+  it('Processes Payroll', async () => {
+    try {
+      //Airdropping 10 SOL to the treasury wallet
+      const signature = await anchor
+        .getProvider()
+        .connection.requestAirdrop(treasury, 10 * anchor.web3.LAMPORTS_PER_SOL);
+      await anchor.getProvider().connection.confirmTransaction(signature);
+
+      //Finding Employee PDA
+      const [employeePDA] = anchor.web3.PublicKey.findProgramAddressSync(
+        [
+          Buffer.from('employee'),
+          Buffer.from(companyName),
+          salaryAccount1.publicKey.toBuffer(),
+        ],
+        program.programId
+      );
+
+      const employeeAccount = await program.account.employee.fetch(employeePDA);
+    } catch (error) {
+      console.log('An error occurred:', error);
+    }
+  });
 });
 
-it('Processes Payroll', async () => {});
-
-function EncryptDecrypt(number, key) {
+function encryptDecrypt(number, key) {
   return number ^ key;
 }
 

@@ -1,5 +1,6 @@
 use crate::constants::LAMPORTS_PER_SOL;
 use crate::errors::CompanyError;
+use crate::utils::encrypt_decrypt_salary;
 use crate::{Company, Employee};
 use anchor_lang::prelude::*;
 use anchor_lang::system_program;
@@ -44,23 +45,34 @@ impl<'info> ProcessPayroll<'info> {
         _team_name: String,
         _company_name: String,
         _salary_account: Pubkey,
-        salary: u16,
-        encrypted_salary: u16,
+        encryption_key: u16,
     ) -> Result<()> {
+        let mut current_rounded_feedback: u8 = 0;
         if self.employee_state.current_total_feedbacks == 0 {
         } else {
-            self.employee_state.last_payroll_feedback =
-                self.employee_state.current_total_feedback_score
-                    / self.employee_state.current_total_feedbacks;
+            //Calculate feedback score from 1-5
+            let raw_feedback = (self.employee_state.current_total_feedback_score
+                / self.employee_state.current_total_feedbacks)
+                as f32;
+            let current_rounded_feedback = raw_feedback.round() as u8;
+
+            self.employee_state.last_payroll_feedback = current_rounded_feedback;
         }
 
-        self.employee_state.encrypted_current_salary = encrypted_salary;
         self.employee_state.current_total_feedback_score = 0;
         self.employee_state.current_total_feedbacks = 0;
-
-        if salary > 0 {
-            let transfer_amount = (salary as u64) * LAMPORTS_PER_SOL;
-
+        let decrypted_salary =
+            encrypt_decrypt_salary(encryption_key, self.employee_state.encrypted_current_salary);
+        if decrypted_salary > 0 {
+            //Calculate the new salary with feedback adjustment
+            let mut transfer_amount = (decrypted_salary as u64) * LAMPORTS_PER_SOL;
+            if current_rounded_feedback == 5 {
+                transfer_amount = transfer_amount * self.company_state.inc_percent as u64 / 100;
+            } else if current_rounded_feedback == 0 {
+                transfer_amount = transfer_amount * self.company_state.dec_percent as u64 / 100;
+            }
+            self.employee_state.encrypted_current_salary =
+                encrypt_decrypt_salary(encryption_key, (transfer_amount / LAMPORTS_PER_SOL) as u16);
             if self.treasury.lamports() < transfer_amount {
                 return Err(error!(CompanyError::InsufficientFunds));
             }

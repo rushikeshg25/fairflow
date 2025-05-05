@@ -4,6 +4,7 @@ pub mod constants;
 pub mod errors;
 pub mod instructions;
 pub mod states;
+pub mod utils;
 pub use instructions::*;
 pub use states::*;
 
@@ -44,14 +45,16 @@ pub mod fairflow {
         company_name: String,
         salary_account: Pubkey,
         employee_name: String,
-        encrypted_current_salary: u16,
+        current_salary: u16,
+        key: u16,
     ) -> Result<()> {
         ctx.accounts.register_employee(
             team_name,
             company_name,
             salary_account,
             employee_name,
-            encrypted_current_salary,
+            current_salary,
+            key,
             ctx.bumps,
         )
     }
@@ -73,15 +76,9 @@ pub mod fairflow {
         team_name: String,
         company_name: String,
         salary_account: Pubkey,
-        salary: u16,
-        encrypted_salary: u16,
+        encryption_key: u16,
     ) -> Result<()> {
-        ctx.accounts.process_payroll(
-            team_name,
-            company_name,
-            salary_account,
-            salary,
-            encrypted_salary,
-        )
+        ctx.accounts
+            .process_payroll(team_name, company_name, salary_account, encryption_key)
     }
 }

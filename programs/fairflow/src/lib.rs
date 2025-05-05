@@ -44,12 +44,14 @@ pub mod fairflow {
         company_name: String,
         salary_account: Pubkey,
         employee_name: String,
+        encrypted_current_salary: u16,
     ) -> Result<()> {
         ctx.accounts.register_employee(
             team_name,
             company_name,
             salary_account,
             employee_name,
+            encrypted_current_salary,
             ctx.bumps,
         )
     }

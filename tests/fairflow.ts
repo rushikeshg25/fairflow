@@ -4,10 +4,12 @@ import { Fairflow } from '../target/types/fairflow';
 import { assert } from 'chai';
 
 describe('fairflow', () => {
+  const ENCRYPTION_KEY = 0xabcd;
   anchor.setProvider(anchor.AnchorProvider.env());
   const program = anchor.workspace.fairflow as Program<Fairflow>;
   const treasuryWallet = anchor.web3.Keypair.generate();
   const treasury = treasuryWallet.publicKey;
+
   const employer = anchor.web3.Keypair.generate();
   const companyName = 'companyt';
   const teamName = 'teamt';
@@ -35,7 +37,6 @@ describe('fairflow', () => {
         .signers([employer])
         .accounts({
           employer: employer.publicKey,
-          treasury: treasury,
         })
         .rpc();
       // console.log('Your transaction signature', tx);
@@ -110,7 +111,8 @@ describe('fairflow', () => {
           teamName,
           companyName,
           salaryAccount1.publicKey,
-          employeeName1
+          employeeName1,
+          EncryptDecrypt(10, ENCRYPTION_KEY)
         )
         .signers([employer])
         .accounts({
@@ -138,7 +140,8 @@ describe('fairflow', () => {
           teamName,
           companyName,
           salaryAccount2.publicKey,
-          employeeName2
+          employeeName2,
+          EncryptDecrypt(11, ENCRYPTION_KEY)
         )
         .signers([employer])
         .accounts({

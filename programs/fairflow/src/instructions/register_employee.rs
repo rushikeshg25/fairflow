@@ -33,6 +33,7 @@ impl<'info> RegisterEmployee<'info> {
         _company_name: String,
         salary_account: Pubkey,
         employee_name: String,
+        encrypted_current_salary: u16,
         bumps: RegisterEmployeeBumps,
     ) -> Result<()> {
         require!(
@@ -46,7 +47,7 @@ impl<'info> RegisterEmployee<'info> {
             last_payroll_feedback: 0,
             current_total_feedback_score: 0,
             current_total_feedbacks: 0,
-            encrypted_current_salary: 0,
+            encrypted_current_salary,
             bump: bumps.employee_state,
         });
 
